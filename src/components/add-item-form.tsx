@@ -53,31 +53,35 @@ export default function AddItemForm({ prefill, defaultLocation = 'fridge', onSav
     setSaving(true)
     setError(null)
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/auth/login'); return }
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/auth/login'); return }
 
-    const { error: dbError } = await supabase.from('ff_inventory_items').insert({
-      user_id: user.id,
-      barcode: prefill?.barcode ?? null,
-      product_name: productName.trim(),
-      brand: brand.trim() || null,
-      category: (prefill as { category?: string })?.category ?? null,
-      image_url: prefill?.image_url ?? null,
-      storage_location: location,
-      expiry_type: expiryType,
-      expiry_date: expiryDate || null,
-      original_expiry_date: expiryDate || null,
-      quantity: quantity.trim() || null,
-      notes: notes.trim() || null,
-      status: 'active',
-      source: prefill?.barcode ? 'barcode_scan' : 'manual_entry',
-    })
+      const { error: dbError } = await supabase.from('ff_inventory_items').insert({
+        user_id: user.id,
+        barcode: prefill?.barcode ?? null,
+        product_name: productName.trim(),
+        brand: brand.trim() || null,
+        category: (prefill as { category?: string })?.category ?? null,
+        image_url: prefill?.image_url ?? null,
+        storage_location: location,
+        expiry_type: expiryType,
+        expiry_date: expiryDate || null,
+        original_expiry_date: expiryDate || null,
+        quantity: quantity.trim() || null,
+        notes: notes.trim() || null,
+        status: 'active',
+        source: prefill?.barcode ? 'barcode_scan' : 'manual_entry',
+      })
 
-    if (dbError) {
-      setError(dbError.message)
-    } else {
-      onSaved?.()
-      router.push('/inventory')
+      if (dbError) {
+        setError(dbError.message)
+      } else {
+        onSaved?.()
+        router.push('/inventory')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save item. Please try again.')
     }
     setSaving(false)
   }

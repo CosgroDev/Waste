@@ -46,7 +46,11 @@ export default function BarcodeScanner({ onScan, onClose }: Props) {
 
     return () => {
       stopped = true
-      scannerRef.current?.stop().catch(() => {})
+      try {
+        scannerRef.current?.stop().catch(() => {})
+      } catch {
+        // suppress synchronous throws from already-stopped scanner
+      }
     }
   }, [])
 
