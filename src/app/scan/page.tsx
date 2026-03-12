@@ -38,12 +38,15 @@ function ScanPageContent() {
         setProduct(data.product)
         setSuggestedLocation(suggestStorageLocation(data.product.product_name, data.product.category))
       } else {
+        // Not found is fine — let user fill in manually
         setProduct({ barcode })
-        setLookupError('Product not found — fill in the details below.')
+        setLookupError('Product not found in database — fill in the details below.')
       }
-    } catch {
+    } catch (err) {
       setProduct({ barcode })
-      setLookupError('Lookup failed — please fill in the details manually.')
+      setLookupError(
+        `Couldn't reach the product database (${err instanceof Error ? err.message : 'network error'}) — please fill in the details manually.`
+      )
     }
     setLookingUp(false)
   }
