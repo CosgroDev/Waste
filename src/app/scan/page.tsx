@@ -2,11 +2,13 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, ScanLine, PenLine } from 'lucide-react'
+import { ArrowLeft, ScanLine, PenLine, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import AddItemForm from '@/components/add-item-form'
 import Nav from '@/components/nav'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { suggestStorageLocation } from '@/lib/storage-suggestion'
 import type { ProductLookupResult, StorageLocation } from '@/types'
 
@@ -34,65 +36,72 @@ function ScanPageContent() {
       const data = await res.json()
       if (data.found) {
         setProduct(data.product)
-        setSuggestedLocation(
-          suggestStorageLocation(data.product.product_name, data.product.category)
-        )
+        setSuggestedLocation(suggestStorageLocation(data.product.product_name, data.product.category))
       } else {
         setProduct({ barcode })
-        setLookupError('Product not found in database. Please fill in the details.')
+        setLookupError('Product not found — fill in the details below.')
       }
     } catch {
       setProduct({ barcode })
-      setLookupError('Lookup failed. Please fill in the details manually.')
+      setLookupError('Lookup failed — please fill in the details manually.')
     }
     setLookingUp(false)
   }
 
   return (
     <div className="min-h-screen pb-safe">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 pt-12 pb-4">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="p-2 -ml-2 text-gray-500">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="text-lg font-semibold text-gray-900">
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border px-4 pt-12 pb-4">
+        <div className="flex items-center gap-3 max-w-lg mx-auto">
+          <Button variant="ghost" size="icon" className="-ml-2" asChild>
+            <Link href="/">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+          </Button>
+          <h1 className="text-lg font-bold tracking-tight">
             {step === 'form' ? 'Add item' : 'Scan barcode'}
           </h1>
         </div>
       </header>
 
-      <main className="px-4 pt-5">
+      <main className="px-4 pt-5 max-w-lg mx-auto">
         {step === 'choose' && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500 text-center">How do you want to add this item?</p>
-            <div className="space-y-3">
-              <button
-                onClick={() => setStep('scanning')}
-                className="w-full flex items-center gap-4 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-left"
-              >
-                <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
-                  <ScanLine className="w-6 h-6 text-green-600" />
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground text-center mb-5">
+              How do you want to add this item?
+            </p>
+            <Card
+              className="cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => setStep('scanning')}
+            >
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                  <ScanLine className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Scan barcode</p>
-                  <p className="text-sm text-gray-500 mt-0.5">Use your camera to scan a product barcode</p>
+                  <p className="font-semibold">Scan barcode</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Use your camera to scan a product barcode
+                  </p>
                 </div>
-              </button>
+              </CardContent>
+            </Card>
 
-              <button
-                onClick={() => { setStep('form'); setProduct(undefined) }}
-                className="w-full flex items-center gap-4 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-left"
-              >
-                <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
-                  <PenLine className="w-6 h-6 text-gray-600" />
+            <Card
+              className="cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => { setStep('form'); setProduct(undefined) }}
+            >
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                  <PenLine className="w-6 h-6 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Add manually</p>
-                  <p className="text-sm text-gray-500 mt-0.5">Type in the product details yourself</p>
+                  <p className="font-semibold">Add manually</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Type in the product details yourself
+                  </p>
                 </div>
-              </button>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -102,44 +111,53 @@ function ScanPageContent() {
               onScan={handleBarcodeScan}
               onClose={() => setStep('choose')}
             />
-            <button
+            <Button
+              variant="ghost"
+              className="w-full text-muted-foreground"
               onClick={() => { setStep('form'); setProduct(undefined) }}
-              className="w-full text-center text-sm text-green-600 font-medium py-2"
             >
-              Skip – enter manually instead
-            </button>
+              Enter manually instead
+            </Button>
           </div>
         )}
 
         {step === 'form' && (
           <div className="space-y-4">
             {lookingUp && (
-              <div className="bg-green-50 rounded-xl px-4 py-3 text-sm text-green-700 text-center">
-                Looking up product…
-              </div>
+              <Card className="border-primary/20 bg-accent">
+                <CardContent className="py-3 px-4 text-sm text-accent-foreground text-center">
+                  Looking up product…
+                </CardContent>
+              </Card>
             )}
             {lookupError && (
-              <div className="bg-amber-50 rounded-xl px-4 py-3 text-sm text-amber-700">
-                {lookupError}
-              </div>
+              <Card className="border-amber-200 bg-amber-50">
+                <CardContent className="py-3 px-4 text-sm text-amber-700">{lookupError}</CardContent>
+              </Card>
             )}
-            {product?.product_name && (
-              <div className="bg-green-50 rounded-xl px-4 py-3">
-                <p className="text-xs text-green-600 font-medium">Product found</p>
-                <p className="text-sm font-semibold text-green-900 mt-0.5">{product.product_name}</p>
-                {product.brand && <p className="text-xs text-green-700">{product.brand}</p>}
-              </div>
+            {product?.product_name && !lookingUp && (
+              <Card className="border-primary/20 bg-accent">
+                <CardContent className="py-3 px-4 flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-primary font-medium">Product found</p>
+                    <p className="text-sm font-semibold mt-0.5">{product.product_name}</p>
+                    {product.brand && <p className="text-xs text-muted-foreground">{product.brand}</p>}
+                  </div>
+                </CardContent>
+              </Card>
             )}
-            <AddItemForm
-              prefill={product}
-              defaultLocation={suggestedLocation}
-            />
-            <button
+
+            <AddItemForm prefill={product} defaultLocation={suggestedLocation} />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-muted-foreground"
               onClick={() => setStep('scanning')}
-              className="w-full text-center text-sm text-gray-500 py-2"
             >
               ← Scan a different barcode
-            </button>
+            </Button>
           </div>
         )}
       </main>

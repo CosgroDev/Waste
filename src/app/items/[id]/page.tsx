@@ -6,6 +6,12 @@ import { ArrowLeft, Trash2, Refrigerator, Archive, Box } from 'lucide-react'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import type { InventoryItem, StorageLocation, ExpiryType } from '@/types'
 
 const storageOptions: { value: StorageLocation; label: string; Icon: React.ElementType }[] = [
@@ -24,7 +30,6 @@ export default function ItemDetailPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Edit state
   const [productName, setProductName] = useState('')
   const [brand, setBrand] = useState('')
   const [location, setLocation] = useState<StorageLocation>('fridge')
@@ -111,7 +116,7 @@ export default function ItemDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Loading…</p>
+        <p className="text-muted-foreground text-sm">Loading…</p>
       </div>
     )
   }
@@ -119,129 +124,117 @@ export default function ItemDetailPage() {
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-500">Item not found.</p>
-        <Link href="/inventory" className="text-green-600 text-sm font-medium">← Back to inventory</Link>
+        <p className="text-muted-foreground">Item not found.</p>
+        <Button asChild variant="link"><Link href="/inventory">← Inventory</Link></Button>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen pb-8">
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 pt-12 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/inventory" className="p-2 -ml-2 text-gray-500">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <h1 className="text-lg font-semibold text-gray-900 truncate">{item.product_name}</h1>
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border px-4 pt-12 pb-4">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="-ml-2" asChild>
+              <Link href="/inventory"><ArrowLeft className="w-5 h-5" /></Link>
+            </Button>
+            <h1 className="text-lg font-bold tracking-tight truncate">{item.product_name}</h1>
           </div>
-          <button onClick={handleDelete} className="p-2 text-red-400 hover:text-red-600">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDelete}
+            className="text-muted-foreground hover:text-destructive"
+          >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </header>
 
-      <main className="px-4 pt-5 space-y-5">
+      <main className="px-4 pt-5 space-y-5 max-w-lg mx-auto">
         {/* Status actions */}
         {item.status === 'active' && (
           <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleStatusChange('consumed')}
-              className="py-2.5 text-sm font-medium text-green-700 bg-green-50 rounded-xl border border-green-200"
-            >
+            <Button variant="outline-primary" onClick={() => handleStatusChange('consumed')}>
               Consumed
-            </button>
-            <button
-              onClick={() => handleStatusChange('discarded')}
-              className="py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl border border-gray-200"
-            >
+            </Button>
+            <Button variant="outline" onClick={() => handleStatusChange('discarded')}>
               Discarded
-            </button>
+            </Button>
             {item.storage_location !== 'freezer' && (
-              <button
-                onClick={handleMoveToFreezer}
-                className="py-2.5 text-sm font-medium text-blue-700 bg-blue-50 rounded-xl border border-blue-200"
-              >
+              <Button variant="outline-blue" onClick={handleMoveToFreezer}>
                 Freeze
-              </button>
+              </Button>
             )}
           </div>
         )}
 
-        {/* Item metadata */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Added</span>
-            <span className="text-gray-700">{format(parseISO(item.created_at), 'd MMM yyyy')}</span>
-          </div>
-          {item.barcode && (
+        {/* Metadata */}
+        <Card>
+          <CardContent className="p-4 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-400">Barcode</span>
-              <span className="text-gray-700 font-mono text-xs">{item.barcode}</span>
+              <span className="text-muted-foreground">Added</span>
+              <span>{format(parseISO(item.created_at), 'd MMM yyyy')}</span>
             </div>
-          )}
-          {item.category && (
-            <div className="flex justify-between">
-              <span className="text-gray-400">Category</span>
-              <span className="text-gray-700 capitalize">{item.category}</span>
-            </div>
-          )}
-          {item.frozen_date && (
-            <div className="flex justify-between">
-              <span className="text-gray-400">Frozen</span>
-              <span className="text-gray-700">{format(parseISO(item.frozen_date), 'd MMM yyyy')}</span>
-            </div>
-          )}
-        </div>
+            {item.barcode && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Barcode</span>
+                <span className="font-mono text-xs">{item.barcode}</span>
+              </div>
+            )}
+            {item.category && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Category</span>
+                <span className="capitalize">{item.category}</span>
+              </div>
+            )}
+            {item.frozen_date && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Frozen on</span>
+                <span>{format(parseISO(item.frozen_date), 'd MMM yyyy')}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Edit form */}
-        <form onSubmit={handleSave} className="space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Edit details</h2>
+        <form onSubmit={handleSave} className="space-y-5">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Edit details</p>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product name</label>
-            <input
-              type="text"
-              required
-              value={productName}
-              onChange={e => setProductName(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Product name</Label>
+            <Input id="name" required value={productName} onChange={e => setProductName(e.target.value)} />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-            <input
-              type="text"
-              value={brand}
-              onChange={e => setBrand(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="brand">Brand</Label>
+            <Input id="brand" value={brand} onChange={e => setBrand(e.target.value)} />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Storage location</label>
+          <div className="space-y-2">
+            <Label>Storage location</Label>
             <div className="grid grid-cols-3 gap-2">
               {storageOptions.map(({ value, label, Icon }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setLocation(value)}
-                  className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-colors ${
+                  className={cn(
+                    'flex flex-col items-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all',
                     location === value
-                      ? 'border-green-600 bg-green-50 text-green-700'
-                      : 'border-gray-200 text-gray-500'
-                  }`}
+                      ? 'border-primary bg-accent text-accent-foreground'
+                      : 'border-border text-muted-foreground hover:border-primary/40'
+                  )}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{label}</span>
+                  {label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Expiry type</label>
+          <div className="space-y-2">
+            <Label>Expiry type</Label>
             <div className="grid grid-cols-3 gap-2">
               {([
                 { value: 'use_by', label: 'Use by' },
@@ -252,11 +245,12 @@ export default function ItemDetailPage() {
                   key={opt.value}
                   type="button"
                   onClick={() => setExpiryType(opt.value)}
-                  className={`py-2 text-xs font-medium rounded-lg border-2 transition-colors ${
+                  className={cn(
+                    'py-2 text-xs font-medium rounded-lg border-2 transition-all',
                     expiryType === opt.value
-                      ? 'border-green-600 bg-green-50 text-green-700'
-                      : 'border-gray-200 text-gray-500'
-                  }`}
+                      ? 'border-primary bg-accent text-accent-foreground'
+                      : 'border-border text-muted-foreground hover:border-primary/40'
+                  )}
                 >
                   {opt.label}
                 </button>
@@ -265,61 +259,36 @@ export default function ItemDetailPage() {
           </div>
 
           {expiryType !== 'unknown' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Expiry date</label>
-              <input
-                type="date"
-                value={expiryDate}
-                onChange={e => setExpiryDate(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="expiry">Expiry date</Label>
+              <Input id="expiry" type="date" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} />
             </div>
           )}
 
           {location === 'freezer' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Frozen date</label>
-              <input
-                type="date"
-                value={frozenDate}
-                onChange={e => setFrozenDate(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="frozen">Frozen date</Label>
+              <Input id="frozen" type="date" value={frozenDate} onChange={e => setFrozenDate(e.target.value)} />
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-            <input
-              type="text"
-              value={quantity}
-              onChange={e => setQuantity(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="e.g. 2 packs"
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="qty">Quantity</Label>
+            <Input id="qty" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="e.g. 2 packs" />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} rows={2} />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-3 bg-green-600 text-white rounded-xl font-medium text-sm hover:bg-green-700 disabled:opacity-50 transition-colors"
-          >
+          <Button type="submit" size="lg" disabled={saving} className="w-full">
             {saving ? 'Saving…' : 'Save changes'}
-          </button>
+          </Button>
         </form>
       </main>
     </div>

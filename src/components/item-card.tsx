@@ -3,7 +3,9 @@
 import Link from 'next/link'
 import { differenceInDays, parseISO } from 'date-fns'
 import { Refrigerator, Archive, Box, MoreVertical } from 'lucide-react'
-import clsx from 'clsx'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import type { InventoryItem } from '@/types'
 
 interface Props {
@@ -22,16 +24,10 @@ const storageIcon: Record<string, React.ElementType> = {
 function expiryBadge(item: InventoryItem) {
   if (!item.expiry_date) return null
   const days = differenceInDays(parseISO(item.expiry_date), new Date())
-  if (days < 0) {
-    return { label: `${Math.abs(days)}d over`, classes: 'bg-red-100 text-red-700' }
-  }
-  if (days === 0) {
-    return { label: 'Today', classes: 'bg-amber-100 text-amber-700' }
-  }
-  if (days <= 3) {
-    return { label: `${days}d left`, classes: 'bg-amber-100 text-amber-700' }
-  }
-  return { label: `${days}d left`, classes: 'bg-green-100 text-green-700' }
+  if (days < 0)   return { label: `${Math.abs(days)}d over`, variant: 'destructive' as const }
+  if (days === 0) return { label: 'Today', variant: 'warning' as const }
+  if (days <= 3)  return { label: `${days}d left`, variant: 'warning' as const }
+  return { label: `${days}d left`, variant: 'success' as const }
 }
 
 export default function ItemCard({ item, onConsume, onDiscard, onMoveToFreezer }: Props) {
@@ -39,56 +35,48 @@ export default function ItemCard({ item, onConsume, onDiscard, onMoveToFreezer }
   const badge = expiryBadge(item)
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm text-gray-900 truncate">{item.product_name}</p>
-          {item.brand && (
-            <p className="text-xs text-gray-400 truncate mt-0.5">{item.brand}</p>
-          )}
-          <div className="flex items-center gap-2 mt-1.5">
-            <StorageIcon className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs text-gray-500 capitalize">{item.storage_location}</span>
-            {badge && (
-              <span className={clsx('text-xs font-semibold px-2 py-0.5 rounded-full', badge.classes)}>
-                {badge.label}
-              </span>
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm truncate">{item.product_name}</p>
+            {item.brand && (
+              <p className="text-xs text-muted-foreground truncate mt-0.5">{item.brand}</p>
             )}
-            {item.expiry_type !== 'unknown' && (
-              <span className="text-xs text-gray-400">
-                {item.expiry_type === 'use_by' ? 'Use by' : 'Best before'}
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <StorageIcon className="w-3.5 h-3.5" />
+                <span className="capitalize">{item.storage_location}</span>
               </span>
-            )}
+              {badge && <Badge variant={badge.variant}>{badge.label}</Badge>}
+              {item.expiry_type !== 'unknown' && (
+                <span className="text-xs text-muted-foreground">
+                  {item.expiry_type === 'use_by' ? 'Use by' : 'Best before'}
+                </span>
+              )}
+            </div>
           </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-1 shrink-0" asChild>
+            <Link href={`/items/${item.id}`}>
+              <MoreVertical className="w-4 h-4" />
+            </Link>
+          </Button>
         </div>
-        <Link href={`/items/${item.id}`} className="p-1 -mr-1 text-gray-400 hover:text-gray-600">
-          <MoreVertical className="w-4 h-4" />
-        </Link>
-      </div>
 
-      {/* Quick actions */}
-      <div className="flex gap-2 mt-3">
-        <button
-          onClick={() => onConsume(item.id)}
-          className="flex-1 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-        >
-          Consumed
-        </button>
-        <button
-          onClick={() => onDiscard(item.id)}
-          className="flex-1 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          Discarded
-        </button>
-        {item.storage_location !== 'freezer' && (
-          <button
-            onClick={() => onMoveToFreezer(item.id)}
-            className="flex-1 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            Freeze
-          </button>
-        )}
-      </div>
-    </div>
+        <div className="flex gap-2 mt-3">
+          <Button variant="outline-primary" size="xs" className="flex-1" onClick={() => onConsume(item.id)}>
+            Consumed
+          </Button>
+          <Button variant="outline" size="xs" className="flex-1" onClick={() => onDiscard(item.id)}>
+            Discarded
+          </Button>
+          {item.storage_location !== 'freezer' && (
+            <Button variant="outline-blue" size="xs" className="flex-1" onClick={() => onMoveToFreezer(item.id)}>
+              Freeze
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -4,6 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Refrigerator, Archive, Box } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import type { StorageLocation, ExpiryType, ProductLookupResult } from '@/types'
 
 interface Props {
@@ -18,13 +23,18 @@ const storageOptions: { value: StorageLocation; label: string; Icon: React.Eleme
   { value: 'cupboard', label: 'Cupboard', Icon: Box },
 ]
 
+const expiryOptions: { value: ExpiryType; label: string }[] = [
+  { value: 'use_by', label: 'Use by' },
+  { value: 'best_before', label: 'Best before' },
+  { value: 'unknown', label: 'Unknown' },
+]
+
 export default function AddItemForm({ prefill, defaultLocation = 'fridge', onSaved }: Props) {
   const router = useRouter()
   const supabase = createClient()
 
   const [productName, setProductName] = useState(prefill?.product_name ?? '')
   const [brand, setBrand] = useState(prefill?.brand ?? '')
-  const [category, setCategory] = useState(prefill?.category ?? '')
   const [location, setLocation] = useState<StorageLocation>(defaultLocation)
   const [expiryType, setExpiryType] = useState<ExpiryType>('use_by')
   const [expiryDate, setExpiryDate] = useState('')
@@ -51,7 +61,7 @@ export default function AddItemForm({ prefill, defaultLocation = 'fridge', onSav
       barcode: prefill?.barcode ?? null,
       product_name: productName.trim(),
       brand: brand.trim() || null,
-      category: category.trim() || null,
+      category: (prefill as { category?: string })?.category ?? null,
       image_url: prefill?.image_url ?? null,
       storage_location: location,
       expiry_type: expiryType,
@@ -73,76 +83,68 @@ export default function AddItemForm({ prefill, defaultLocation = 'fridge', onSav
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Product name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Product name <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <Label htmlFor="product_name">
+          Product name <span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="product_name"
           required
           value={productName}
           onChange={e => setProductName(e.target.value)}
-          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="e.g. Whole milk"
         />
       </div>
 
-      {/* Brand */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-        <input
-          type="text"
+      <div className="space-y-1.5">
+        <Label htmlFor="brand">
+          Brand <span className="text-muted-foreground font-normal">(optional)</span>
+        </Label>
+        <Input
+          id="brand"
           value={brand}
           onChange={e => setBrand(e.target.value)}
-          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          placeholder="Optional"
+          placeholder="e.g. Arla"
         />
       </div>
 
-      {/* Storage location */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Storage location <span className="text-red-500">*</span>
-        </label>
+      <div className="space-y-2">
+        <Label>Storage location <span className="text-destructive">*</span></Label>
         <div className="grid grid-cols-3 gap-2">
           {storageOptions.map(({ value, label, Icon }) => (
             <button
               key={value}
               type="button"
               onClick={() => setLocation(value)}
-              className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-colors ${
+              className={cn(
+                'flex flex-col items-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all',
                 location === value
-                  ? 'border-green-600 bg-green-50 text-green-700'
-                  : 'border-gray-200 text-gray-500'
-              }`}
+                  ? 'border-primary bg-accent text-accent-foreground'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
+              )}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-xs font-medium">{label}</span>
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Expiry type */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Expiry type</label>
+      <div className="space-y-2">
+        <Label>Expiry type</Label>
         <div className="grid grid-cols-3 gap-2">
-          {([
-            { value: 'use_by', label: 'Use by' },
-            { value: 'best_before', label: 'Best before' },
-            { value: 'unknown', label: 'Unknown' },
-          ] as { value: ExpiryType; label: string }[]).map(opt => (
+          {expiryOptions.map(opt => (
             <button
               key={opt.value}
               type="button"
               onClick={() => setExpiryType(opt.value)}
-              className={`py-2 text-xs font-medium rounded-lg border-2 transition-colors ${
+              className={cn(
+                'py-2 text-xs font-medium rounded-lg border-2 transition-all',
                 expiryType === opt.value
-                  ? 'border-green-600 bg-green-50 text-green-700'
-                  : 'border-gray-200 text-gray-500'
-              }`}
+                  ? 'border-primary bg-accent text-accent-foreground'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
+              )}
             >
               {opt.label}
             </button>
@@ -150,56 +152,52 @@ export default function AddItemForm({ prefill, defaultLocation = 'fridge', onSav
         </div>
       </div>
 
-      {/* Expiry date */}
       {expiryType !== 'unknown' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Expiry date <span className="text-red-500">*</span>
-          </label>
-          <input
+        <div className="space-y-1.5">
+          <Label htmlFor="expiry_date">
+            Expiry date <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="expiry_date"
             type="date"
             value={expiryDate}
             onChange={e => setExpiryDate(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
       )}
 
-      {/* Quantity */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-        <input
-          type="text"
+      <div className="space-y-1.5">
+        <Label htmlFor="quantity">
+          Quantity <span className="text-muted-foreground font-normal">(optional)</span>
+        </Label>
+        <Input
+          id="quantity"
           value={quantity}
           onChange={e => setQuantity(e.target.value)}
-          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="e.g. 2 packs, 500ml"
         />
       </div>
 
-      {/* Notes */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-        <textarea
+      <div className="space-y-1.5">
+        <Label htmlFor="notes">
+          Notes <span className="text-muted-foreground font-normal">(optional)</span>
+        </Label>
+        <Textarea
+          id="notes"
           value={notes}
           onChange={e => setNotes(e.target.value)}
+          placeholder="Any notes about this item"
           rows={2}
-          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-          placeholder="Optional notes"
         />
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+        <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={saving || !productName.trim()}
-        className="w-full py-3 bg-green-600 text-white rounded-xl font-medium text-sm hover:bg-green-700 disabled:opacity-50 transition-colors"
-      >
+      <Button type="submit" size="lg" disabled={saving || !productName.trim()} className="w-full">
         {saving ? 'Saving…' : 'Save item'}
-      </button>
+      </Button>
     </form>
   )
 }

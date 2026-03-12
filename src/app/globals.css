@@ -4,7 +4,38 @@
 
 @layer base {
   :root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 8%;
+
+    --primary: 142 72% 29%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 5% 94%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 142 30% 94%;
+    --accent-foreground: 142 72% 22%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 142 72% 29%;
+
+    --radius: 0.75rem;
+
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    @apply border-border;
   }
 
   html {
@@ -12,16 +43,25 @@
   }
 
   body {
-    @apply bg-green-50 text-gray-900 antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 }
 
 @layer utilities {
   .pb-safe {
-    padding-bottom: calc(4rem + var(--safe-area-inset-bottom));
+    padding-bottom: calc(5rem + var(--safe-area-inset-bottom));
   }
 
   .bottom-nav-height {
     height: calc(4rem + var(--safe-area-inset-bottom));
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
