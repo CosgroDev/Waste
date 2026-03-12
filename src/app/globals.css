@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-green-50 text-gray-900 antialiased;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: calc(4rem + var(--safe-area-inset-bottom));
+  }
+
+  .bottom-nav-height {
+    height: calc(4rem + var(--safe-area-inset-bottom));
+  }
+}
