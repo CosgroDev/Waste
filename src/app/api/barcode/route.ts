@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}?fields=product_name,brands,categories_tags,categories_hierarchy,image_front_small_url,nutriments`
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'FridgeFlow/1.0 (food waste reduction app)' },
+      headers: { 'User-Agent': 'WasteNot/1.0 (food waste reduction app)' },
       next: { revalidate: 86400 }, // cache for 24h
     })
 

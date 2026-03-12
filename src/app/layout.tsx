@@ -3,7 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'FridgeFlow',
+  title: 'WasteNot',
   description: 'Track your food, reduce waste, get recipe ideas',
 }
 

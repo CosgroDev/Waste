@@ -67,7 +67,7 @@ export default function HomePage() {
               <Leaf className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">FridgeFlow</h1>
+              <h1 className="text-lg font-bold tracking-tight">WasteNot</h1>
               <p className="text-xs text-primary-foreground/70">Your kitchen at a glance</p>
             </div>
           </div>

@@ -59,7 +59,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-4 shadow-xl shadow-primary/20">
             <Leaf className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">FridgeFlow</h1>
+          <h1 className="text-2xl font-bold tracking-tight">WasteNot</h1>
           <p className="text-sm text-muted-foreground mt-1">Reduce waste, eat better</p>
         </div>
 
